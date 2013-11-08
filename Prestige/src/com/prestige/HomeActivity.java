@@ -5,18 +5,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.ValueEventListener;
 import com.openclove.ovx.OVXCallListener;
 import com.openclove.ovx.OVXException;
 import com.openclove.ovx.OVXView;
+import com.prestige.metrics.Badge;
+import com.prestige.metrics.CompetencyProgress;
 
 import android.os.Bundle;
 import android.provider.Settings.Secure;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -33,7 +37,10 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +50,7 @@ public class HomeActivity extends Activity implements ColorPickerDialog.OnColorC
 	private static final String TAG = HomeActivity.class.getSimpleName();
 	private static final String FIREBASE_URL_WHITEBOARD = "https://bunchbot.firebaseio.com/whiteboard";
 	private static final String FIREBASE_URL_COMPETENCY = "https://bunchbot.firebaseio.com/competency";
+	private static final String FIREBASE_URL_BADGES = "https://bunchbot.firebaseio.com/badges";
 
 	private static final int COLOR_MENU_ID = Menu.FIRST;
 	private static final int CLEAR_MENU_ID = Menu.FIRST + 1;
@@ -51,10 +59,11 @@ public class HomeActivity extends Activity implements ColorPickerDialog.OnColorC
 	private DrawingView drawingView;
 	private Firebase firebaseRefWB;
 	private Firebase firebaseRefCompetency;
+	private Firebase firebaseRefBadges;
 	private ValueEventListener connectedListener;
 
-	FrameLayout firebaseCanvasFL;
-	TextView whiteBoardStatusTV;
+	LinearLayout firebaseCanvasFL;
+	TextView whiteBoardStatusTV ;
 
 	OVXView ovxView;
 	Button ovxStartCallBtn;
@@ -68,10 +77,13 @@ public class HomeActivity extends Activity implements ColorPickerDialog.OnColorC
 	Map<Integer, Map<Integer, String>> childData = new HashMap<Integer, Map<Integer, String>>();
 	Map<String, String> childLevelMap = new HashMap<String, String>();
 
-	private static final String[] GENRES = new String[] { "Distinguish", "Illustrate", "Compare", "Relate", "Follows",
-			"Completes", "Adaptation", "Attension" };
-
 	boolean isTeacher = true;
+	
+	ImageView badge1, badge2, badge3;
+	
+	ProgressBar competencyProgressPB;
+	
+	int progress=0;
 	
 	/**
 	 * Called when the activity is first created.
@@ -84,13 +96,150 @@ public class HomeActivity extends Activity implements ColorPickerDialog.OnColorC
 		isTeacher = getIntent().getIntExtra("PROFILE_KEY", 0) == 0;
 		Log.d(TAG, "Is teacher ? : " + isTeacher);
 		
-		initMetrics();
 
-		if (isTeacher) {
+		firebaseRefCompetency = new Firebase(FIREBASE_URL_COMPETENCY);
+		competencyProgressPB = (ProgressBar) findViewById(R.id.competencyProgressPB);
+		competencyProgressPB.setProgress(0);
+		firebaseRefCompetency.addChildEventListener(new ChildEventListener() {
 			
+			@Override
+			public void onChildRemoved(DataSnapshot snapshot) {}
+			
+			@Override
+			public void onChildMoved(DataSnapshot snapshot, String previousChildName) {}
+			
+			@Override
+			public void onChildChanged(DataSnapshot snapshot, String previousChildName) {}
+			
+			@Override
+			public void onChildAdded(DataSnapshot snapshot, String previousChildName) {
+				
+				CompetencyProgress b = snapshot.getValue(CompetencyProgress.class);
+				
+				competencyProgressPB.setProgress(progress + b.getProgress());
+			}
+
+			@Override
+			public void onCancelled() {}
+		});
+		
+		
+		badge1 = (ImageView) findViewById(R.id.badge1) ;
+		badge2 = (ImageView) findViewById(R.id.badge2) ;
+		badge3 = (ImageView) findViewById(R.id.badge3) ;
+		
+		firebaseRefBadges = new Firebase(FIREBASE_URL_BADGES);
+		firebaseRefBadges.addChildEventListener(new ChildEventListener() {
+			
+			@Override
+			public void onChildRemoved(DataSnapshot snapshot) {
+				if (!isTeacher) update(snapshot);
+			}
+			
+			@Override
+			public void onChildMoved(DataSnapshot snapshot, String previousChildName) {}
+			
+			@Override
+			public void onChildChanged(DataSnapshot snapshot, String previousChildName) {
+				if (!isTeacher) update(snapshot);
+			}
+			
+			@Override
+			public void onChildAdded(DataSnapshot snapshot, String previousChildName) {
+				Badge b = snapshot.getValue(Badge.class);
+
+				switch (b.getId()) {
+				case 1:
+					badge1.setVisibility(View.VISIBLE);
+					break;
+
+				case 2:
+					badge2.setVisibility(View.VISIBLE);
+					break;
+
+				case 3:
+					badge3.setVisibility(View.VISIBLE);
+					break;
+
+				default:
+					break;
+				}
+
+			}
+			
+			@Override
+			public void onCancelled() {}
+			
+			private void update(DataSnapshot snapshot){
+				Badge b = snapshot.getValue(Badge.class);
+
+				switch (b.getId()) {
+				case 1:
+					badge1.setVisibility(View.INVISIBLE);
+					break;
+
+				case 2:
+					badge2.setVisibility(View.INVISIBLE);
+					break;
+
+				case 3:
+					badge3.setVisibility(View.INVISIBLE);
+					break;
+
+				default:
+					break;
+				}
+
+			}
+		});
+		
+		if (isTeacher) {
+			initMetrics();			
+
+			badge1.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					Badge b1 = new Badge();
+					b1.setId(1);
+					b1.setEnabled(true);
+					firebaseRefBadges.push().setValue(b1);
+				}
+			});
+
+			badge2.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					Badge b2 = new Badge();
+					b2.setId(2);
+					b2.setEnabled(true);
+					firebaseRefBadges.push().setValue(b2);
+				}
+			});
+
+			badge3.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					Badge b3 = new Badge();
+					b3.setId(3);
+					b3.setEnabled(true);
+					firebaseRefBadges.push().setValue(b3);
+				}
+			});
+
+
 		} else {
 			findViewById(R.id.outcomeLL).setVisibility(View.GONE);
+			badge1.setVisibility(View.INVISIBLE);
+			badge2.setVisibility(View.INVISIBLE);
+			badge3.setVisibility(View.INVISIBLE);
+			
 		}
+		
+		
+		
 		
 		competencyMetricLV = (ExpandableListView) findViewById(R.id.competencyLV);
 //		competencySubmitBtn = (Button) findViewById(R.id.competencySubmitBtn);
@@ -102,7 +251,7 @@ public class HomeActivity extends Activity implements ColorPickerDialog.OnColorC
 		// competencyMetricLV.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 
 		firebaseRefWB = new Firebase(FIREBASE_URL_WHITEBOARD);
-		firebaseCanvasFL = (FrameLayout) findViewById(R.id.firebaseCanvasFL);
+		firebaseCanvasFL = (LinearLayout) findViewById(R.id.firebaseCanvasFL);
 		drawingView = new DrawingView(this, firebaseRefWB);
 		firebaseCanvasFL.addView(drawingView);
 		whiteBoardStatusTV = (TextView) findViewById(R.id.whiteBoardStatusTV);
@@ -261,6 +410,7 @@ public class HomeActivity extends Activity implements ColorPickerDialog.OnColorC
 
 		case CLEAR_MENU_ID:
 			drawingView.cleanCanvas();
+			firebaseRefBadges.setValue(null);
 			return true;
 
 		case VIDEO_MENU_ID:
@@ -374,6 +524,10 @@ public class HomeActivity extends Activity implements ColorPickerDialog.OnColorC
 				@Override
 				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 					Log.d(TAG, "Check changed for : " + childData.get(groupPosition).get(childPosition));
+					
+					CompetencyProgress cp = new CompetencyProgress();
+					cp.setProgress(progress+=5);
+					firebaseRefCompetency.push().setValue(cp);
 				}
 			});
 

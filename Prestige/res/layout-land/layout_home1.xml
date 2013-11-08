@@ -42,7 +42,8 @@
                 android:background="@android:color/holo_red_dark"
                 android:padding="4dp"
                 android:text="Video Chat Inactive"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@android:color/white" />
 
             <TextView
                 android:id="@+id/whiteBoardStatusTV"
@@ -52,24 +53,64 @@
                 android:background="@android:color/holo_red_dark"
                 android:padding="4dp"
                 android:text="White board OFFLINE"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@android:color/white" />
         </LinearLayout>
 
-        <FrameLayout
+        <LinearLayout
             android:id="@+id/firebaseCanvasFL"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="3"
-            android:background="@drawable/border_row" >
-        </FrameLayout>
+            android:background="@drawable/border_row"
+            android:orientation="vertical"
+            android:padding="8dp" >
+        </LinearLayout>
 
-        <FrameLayout
+        <LinearLayout
             android:id="@+id/studentListFL"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="@android:color/holo_orange_light" >
-        </FrameLayout>
+            android:gravity="center_vertical"
+            android:background="@android:color/holo_green_light" >
+
+            <ImageView
+                android:id="@+id/badge1"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_margin="4dp"
+                android:background="@drawable/border_row"
+                android:padding="4dp"
+                android:src="@drawable/good_listener_115" />
+            
+             <ImageView
+                 android:id="@+id/badge2"
+                 android:layout_width="64dp"
+                 android:layout_height="64dp"
+                 android:layout_margin="4dp"
+                 android:background="@drawable/border_row"
+                 android:padding="4dp"
+                 android:src="@drawable/attendance_115" />
+             
+              <ImageView
+                  android:id="@+id/badge3"
+                  android:layout_width="64dp"
+                  android:layout_height="64dp"
+                  android:layout_margin="4dp"
+                  android:background="@drawable/border_row"
+                  android:padding="4dp"
+                  android:src="@drawable/positive_attitude_115" />
+
+              <ProgressBar
+                  android:id="@+id/competencyProgressPB"
+                  style="?android:attr/progressBarStyleHorizontal"
+                  android:layout_margin="16dp"
+                  android:layout_width="0dp"
+                  android:layout_weight="1"
+                  android:layout_height="match_parent" />
+
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

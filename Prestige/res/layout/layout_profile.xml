@@ -5,7 +5,7 @@
     tools:context=".ProfileActivity" >
 
     <ImageView
-        android:id="@+id/imageView1"
+        android:id="@+id/badge1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentLeft="true"

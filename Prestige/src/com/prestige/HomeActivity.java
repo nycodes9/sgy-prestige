@@ -16,22 +16,26 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class HomeActivity extends Activity implements ColorPickerDialog.OnColorChangedListener {
 
 	private static final String TAG = HomeActivity.class.getSimpleName();
-	private static final String FIREBASE_URL = "https://bunchbot.firebaseio.com/";
+	private static final String FIREBASE_URL_WHITEBOARD = "https://bunchbot.firebaseio.com/whiteboard";
+	private static final String FIREBASE_URL_COMPETENCY = "https://bunchbot.firebaseio.com/competency";
 
     private static final int COLOR_MENU_ID = Menu.FIRST;
     private static final int CLEAR_MENU_ID = Menu.FIRST + 1;
     private static final int VIDEO_MENU_ID = Menu.FIRST + 2;
 
     private DrawingView drawingView;
-    private Firebase ref;
+    private Firebase firebaseRefWB;
+    private Firebase firebaseRefCompetency;
     private ValueEventListener connectedListener;
 
     FrameLayout firebaseCanvasFL;
@@ -41,7 +45,11 @@ public class HomeActivity extends Activity implements ColorPickerDialog.OnColorC
     Button ovxStartCallBtn;
     TextView ovxStatusTV;
     
+    ListView competencyMetricLV;
+    Button competencySubmitBtn;
     
+	private static final String[] GENRES = new String[] { "Distinguish", "Illustrate", "Compare", "Relate", "Follows",
+			"Completes", "Adaptation", "Attension" };
     
     /**
      * Called when the activity is first created.
@@ -50,10 +58,19 @@ public class HomeActivity extends Activity implements ColorPickerDialog.OnColorC
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_home1);
-
-        ref = new Firebase(FIREBASE_URL);
+        
+        competencyMetricLV = (ListView) findViewById(R.id.competencyLV);
+        competencySubmitBtn = (Button) findViewById(R.id.competencySubmitBtn);
+        
+        firebaseRefCompetency = new Firebase(FIREBASE_URL_COMPETENCY);
+        competencyMetricLV.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, GENRES));
+        competencyMetricLV.setItemsCanFocus(false);
+        competencyMetricLV.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+//        competencyMetricLV.setOn
+        
+        firebaseRefWB = new Firebase(FIREBASE_URL_WHITEBOARD);
         firebaseCanvasFL = (FrameLayout) findViewById(R.id.firebaseCanvasFL);
-        drawingView = new DrawingView(this, ref);
+        drawingView = new DrawingView(this, firebaseRefWB);
         firebaseCanvasFL.addView(drawingView);
         whiteBoardStatusTV = (TextView) findViewById(R.id.whiteBoardStatusTV); 
         
@@ -141,7 +158,7 @@ public class HomeActivity extends Activity implements ColorPickerDialog.OnColorC
     public void onStart() {
         super.onStart();
         // Set up a notification to let us know when we're connected or disconnected from the Firebase servers
-        connectedListener = ref.getRoot().child(".info/connected").addValueEventListener(new ValueEventListener() {
+        connectedListener = firebaseRefWB.getRoot().child(".info/connected").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 boolean connected = (Boolean)dataSnapshot.getValue();
@@ -167,7 +184,7 @@ public class HomeActivity extends Activity implements ColorPickerDialog.OnColorC
     public void onStop() {
         super.onStop();
         // Clean up our listener so we don't have it attached twice.
-        ref.getRoot().child(".info/connected").removeEventListener(connectedListener);
+        firebaseRefWB.getRoot().child(".info/connected").removeEventListener(connectedListener);
         drawingView.cleanup();
     }
 
@@ -187,7 +204,7 @@ public class HomeActivity extends Activity implements ColorPickerDialog.OnColorC
 
         menu.add(0, COLOR_MENU_ID, 0, "Color").setShortcut('3', 'c');
         menu.add(1, CLEAR_MENU_ID, 0, "Clear").setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        menu.add(2, VIDEO_MENU_ID, 0, "Video Chat").setIcon(R.drawable.ic_video_chat).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+//        menu.add(2, VIDEO_MENU_ID, 0, "Video Chat").setIcon(R.drawable.ic_video_chat).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         return true;
     }
 
@@ -207,6 +224,7 @@ public class HomeActivity extends Activity implements ColorPickerDialog.OnColorC
 
 		case CLEAR_MENU_ID: 
 			drawingView.cleanCanvas();
+			return true;
             
 		case VIDEO_MENU_ID: 
 			try {

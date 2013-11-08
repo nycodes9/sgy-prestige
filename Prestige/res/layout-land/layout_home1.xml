@@ -5,27 +5,18 @@
     android:orientation="horizontal" >
 
     <LinearLayout
+        android:id="@+id/outcomeLL"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="#f7f7f7"
         android:orientation="vertical" >
 
-        <ListView
+        <ExpandableListView
             android:id="@+id/competencyLV"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="4" >
-        </ListView>
-
-        <Button
-            android:id="@+id/competencySubmitBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="right"
-            android:text="Done" />
-
+        </ExpandableListView>
     </LinearLayout>
 
     <LinearLayout
@@ -57,9 +48,9 @@
                 android:id="@+id/whiteBoardStatusTV"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="2dp"
                 android:background="@android:color/holo_red_dark"
                 android:padding="4dp"
-                android:layout_marginLeft="2dp"
                 android:text="White board OFFLINE"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
         </LinearLayout>

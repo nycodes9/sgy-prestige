@@ -53,6 +53,12 @@
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:screenOrientation="sensorLandscape" >
+            
+        </activity>
+        <activity
+            android:name="com.prestige.ProfileActivity"
+            android:label="@string/title_activity_profile"
+            android:screenOrientation="sensorLandscape" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
